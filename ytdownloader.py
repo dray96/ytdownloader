@@ -6,24 +6,6 @@ from tkinter import filedialog
 from tkinter import messagebox
 import pytube
 import os
-import pyglet, os
-#import subprocess as sp
-
-
-"""url = input('Ingrese la url del video: ')
-video = pytube.YouTube(url)
-resoluciones = video.streams.filter(progressive=True, file_extension='mp4').order_by('resolution').desc()
-for i, resolucion in enumerate(resoluciones):
-    print(f'{i+1} - [[{resolucion.resolution}]]')
-opcion = int(input('Ingrese la opcion de la resolucion que desea descargar: '))
-stream = resoluciones[opcion-1]
-print(f"Descargando {video.title} en calidad {stream.resolution}...")
-ruta = stream.download()
-# peso del archivo descargado en megabytes
-peso = os.path.getsize(ruta) / 1000000
-print(f'El archivo fue descargado y guardado en la ruta:\n{ruta}.\n Su peso es: {peso} mb.')
-sp.call('pause', shell=True)"""
-
 
 class Aplicacion():
     def __init__(self):
@@ -31,18 +13,13 @@ class Aplicacion():
         self.raiz.title("YTDownloader")
         # cambiar color del fondo
         self.raiz.config(bg="#F43939")
-        # bloquear boton de cerrar ventana
         self.raiz.protocol("WM_DELETE_WINDOW", self.salir)
         self.raiz.resizable(0, 0)
         # cambiar tamaño de letra de la raiz
         self.raiz.option_add("*Font", "Arial 12")
-        # definir bitmap para el icono de la ventana
         self.raiz.iconbitmap("ytd.ico")
         self.raiz.geometry("900x250")
 
-        # fuente personalizada para todos los widgets
-
-        # posicion de la ventana en la pantalla al iniciar
         # obtener resolucion de la pantalla
         ancho_pantalla = self.raiz.winfo_screenwidth()
         alto_pantalla = self.raiz.winfo_screenheight()
@@ -120,6 +97,7 @@ class Aplicacion():
             try:
                 video = pytube.YouTube(self.url.get())
                 self.raiz.title(f"YTDownloader - Descargando '{video.title}' ")
+
                 # label nombre del video
                 self.video_descargar = Label(self.raiz, text=f"{video.title}")
                 self.video_descargar.grid(row=2, column=0, padx=10, pady=10)
