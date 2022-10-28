@@ -6,11 +6,12 @@ from tkinter import filedialog
 from tkinter import messagebox
 import pytube
 import os
+import threading
 
 class Aplicacion():
     def __init__(self):
         self.raiz = Tk()
-        self.raiz.title("YTDownloader")
+        self.raiz.title("YTDownloader v0.5 (BETA)")
         # cambiar color del fondo
         self.raiz.config(bg="#F43939")
         self.raiz.protocol("WM_DELETE_WINDOW", self.salir)
@@ -38,6 +39,7 @@ class Aplicacion():
         self.etiqueta1.config(fg="white")
         self.etiqueta1.grid(row=0, column=0, padx=10, pady=10)
 
+        # URL DEL VIDEO
         self.url = StringVar()
         self.caja1 = Entry(self.raiz, textvariable=self.url, width=50)
         self.caja1.config(bg="#F43939")
@@ -45,7 +47,7 @@ class Aplicacion():
         self.caja1.grid(row=0, column=1, padx=10, pady=10)
 
         # BOTON DESCARGAR
-        self.boton1 = Button(self.raiz, text="Descargar", command=self.descargar)
+        self.boton1 = Button(self.raiz, text="Descargar", command=threading.Thread(target=self.descargar).start)
         self.boton1.config(cursor="hand2")
         self.boton1.config(bg="#F43939")
         self.boton1.config(fg="white")
@@ -65,8 +67,15 @@ class Aplicacion():
         self.etiqueta2.config(fg="white")
         self.etiqueta2.grid(row=1, column=0, padx=10, pady=10)
 
+        # RUTA DE DESCARGA
+        ruta_descargas = open("config.txt", "r")
+        ruta_descargas = ruta_descargas.read()
+        print(ruta_descargas)
+
+
         self.ruta = StringVar()
         self.caja2 = Entry(self.raiz, textvariable=self.ruta, width=50)
+        self.ruta.set(ruta_descargas)
         self.caja2.config(bg="#F43939")
         self.caja2.config(fg="white")
         self.caja2.config(state="readonly")
@@ -75,7 +84,7 @@ class Aplicacion():
 
 
         #label de version de la app
-        self.informacion = Label(self.raiz, text="YTDownloader v0.1 (ALPHA)")
+        self.informacion = Label(self.raiz, text="YTDownloader v0.5 (BETA)")
         self.informacion.config(bg="#F43939")
         self.informacion.config(fg="white")
         self.informacion.config(font=("Arial", 9))
@@ -88,7 +97,31 @@ class Aplicacion():
         self.barra.grid_remove()
 
 
+    def destruir_boton(self):
+        # destruir el boton de descargar
+        for widget in self.raiz.winfo_children():
+            if widget == self.boton1:
+                widget.destroy()
+                print("Boton destruido")
+
+        #self.crear_boton()
+        #self.boton1.destroy()
+
+        self.crear_boton()
+
+
+    def crear_boton(self):
+        self.boton1 = Button(self.raiz, text="Descargar", command=threading.Thread(target=self.descargar).start)
+        self.boton1.config(cursor="hand2")
+        self.boton1.config(bg="#F43939")
+        self.boton1.config(fg="white")
+        self.boton1.config(width=20)
+        self.boton1.grid(row=3, column=1, padx=10, pady=10)
+
     def descargar(self):
+        self.destruir_boton()
+
+
         if self.ruta.get() == "":
             messagebox.showwarning("ADVERTENCIA", "Debe seleccionar una ruta de descarga")
         elif self.url.get() == "":
@@ -99,10 +132,12 @@ class Aplicacion():
                 self.raiz.title(f"YTDownloader - Descargando '{video.title}' ")
 
                 # label nombre del video
-                self.video_descargar = Label(self.raiz, text=f"{video.title}")
+                self.video_descargar = Label(self.raiz, text="Descargando...")
                 self.video_descargar.grid(row=2, column=0, padx=10, pady=10)
                 self.video_descargar.config(bg="#F43939")
                 self.video_descargar.config(fg="white")
+
+                # obtener cantidad que se está descargando
 
                 stream = video.streams.get_highest_resolution()
 
@@ -112,6 +147,8 @@ class Aplicacion():
                 self.barra["value"] = 100
                 # peso del archivo descargado en megabytes
                 peso = os.path.getsize(ruta) / 1000000
+
+                self.video_descargar.config(text=f"¡FINALIZADO!")
 
                 # actualizar label de la barra de progreso
                 self.labelpb = Label(self.raiz, text="")
@@ -123,11 +160,11 @@ class Aplicacion():
 
                 # limpiando panel
                 self.caja1.delete(0, END)
-                self.caja2.config(state="normal")
-                self.caja2.delete(0, END)
+                """self.caja2.config(state="normal")
+                self.caja2.delete(0, END)"""
                 self.caja2.config(state="readonly")
                 self.raiz.title(f"YTDownloader - Descarga completa")
-                self.raiz.after(5000, self.raiz.title, "YTDownloader")
+                self.raiz.after(5000, self.raiz.title, "YTDownloader v0.5 (BETA)")
                 self.video_descargar.after(5000, self.video_descargar.destroy)
                 self.labelpb.after(5000, self.labelpb.destroy)
                 self.barra.after(5000, self.barra.grid_remove)
@@ -139,6 +176,9 @@ class Aplicacion():
     def buscar(self):
         ruta = filedialog.askdirectory()
         self.ruta.set(ruta)
+        ruta_descargas = open("config.txt", "w")
+        ruta_descargas.write(ruta)
+        ruta_descargas.close()
 
     def salir(self):
         valor = messagebox.askquestion("YTDownloader", "¿Desea abandonar la aplicación?")
